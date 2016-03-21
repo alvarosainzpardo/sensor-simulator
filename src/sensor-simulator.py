@@ -45,7 +45,7 @@ class Sensor:
 				measure['value'] = random.choice(measure['values'])
 			elif measure['method'] in ['incrandint', 'increment_randint', 'increment_random_int']:
 				measure['value'] += random.randint(measure['from'], measure['to'])
-			elif measure['method'] in ['incrandfloat', 'increment_randint', 'increment_random_int']:
+			elif measure['method'] in ['incrandfloat', 'increment_randfloat', 'increment_random_float']:
 				measure['value'] += float('{0:.2f}'.format(random.uniform(measure['from'], measure['to'])))
 			elif measure['method'] in ['cyclerandint', 'cycle_randint', 'cycle_random_int']:
 				measure['value'] += random.randint(0, measure['by'])
@@ -55,6 +55,11 @@ class Sensor:
 				measure['value'] += float('{0:.2f}'.format(random.uniform(0, measure['by'])))
 				if measure['value'] > measure['to']:
 					measure['value'] = measure['from']
+			elif measure['method'] in ['dayint', 'day_int']:
+				measure['value']
+			# Special method for specific types of sensors
+
+			# Streetline parking sensor
 			elif measure['method'] in ['streetline_state', 'parking_state']:
 				measure['value'] = random.choice(measure['values'])
 				if measure['value'] == 'OCCUPIED':
@@ -93,6 +98,10 @@ class Sensor:
 		self.apikey = get_sensor_option(config, self.id, 'apikey')
 		self.timeout = eval(get_sensor_option(config, self.id, 'timeout'))
 		self.measures = eval(get_sensor_option(config, self.id, 'measures'))
+		for measure in self.measures:
+			if measure['method'] in ['dayint', 'day_int']:
+				for datapoint in measure['datapoints']:
+					print datapoint
 		self.runtime = 0
 		self._ready = True
 		
@@ -137,7 +146,7 @@ random.seed()
 sensor_list = []
 
 for sensor_id in config.sections():
-	if sensor_id not in ['idas', 'sensor_defaults']:
+	if sensor_id not in ['idas', 'sensor_defaults', 'data']:
 		sensor_list.append(Sensor(sensor_id))
 	
 for sensor in sensor_list:
