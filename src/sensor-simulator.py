@@ -39,7 +39,7 @@ class Sensor:
 					measure['value'] = measure['from']
 			elif measure['method'] in ['randint', 'random_int']:
 				measure['value'] = random.randint(measure['from'], measure['to'])
-			elif measure['method'] in ['randfloat', 'random_float']:
+			elif measure['method'] in ['randfloat', 'rand_float', 'random_float']:
 				measure['value'] = float('{0:.2f}'.format(random.uniform(measure['from'], measure['to'])))
 			elif measure['method'] in ['randval', 'randomval', 'random_val', 'random_value']:
 				measure['value'] = random.choice(measure['values'])
