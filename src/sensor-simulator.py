@@ -3,11 +3,12 @@
 # Copyright 2016 Telefonica Soluciones, S.A.U
 # Developed by Alvaro Sainz-Pardo (@asainzp), Mar 2016.
 
+from __future__ import division
 import requests
 import sys
 import ConfigParser
 from threading import Timer
-import datetime
+from datetime import datetime
 import random
 
 class Sensor:
@@ -22,13 +23,13 @@ class Sensor:
 		self.port = None
 		self.apikey = None
 		self.measures = None
-	
+
 	def _new_measures(self):
 		_streetline_availability = 0
 		
 		for measure in self.measures:
 			if measure['method'] in ['datetime', 'time']:
-				measure['value'] = datetime.datetime.now().isoformat()
+				measure['value'] = self.now.isoformat()
 			if measure['method'] in ['sequence', 'seq']:
 				measure['value'] += 1
 			elif measure['method'] in ['increment', 'inc', 'incr']:
@@ -47,16 +48,65 @@ class Sensor:
 				measure['value'] += random.randint(measure['from'], measure['to'])
 			elif measure['method'] in ['incrandfloat', 'increment_randfloat', 'increment_random_float']:
 				measure['value'] += float('{0:.2f}'.format(random.uniform(measure['from'], measure['to'])))
-			elif measure['method'] in ['cyclerandint', 'cycle_randint', 'cycle_random_int']:
+			elif measure['method'] in ['cyclerandint', 'cycle_randint', 'cycle_rand_int', 'cycle_random_int']:
 				measure['value'] += random.randint(0, measure['by'])
 				if measure['value'] > measure['to']:
 					measure['value'] = measure['from']
-			elif measure['method'] in ['cyclerandfloat', 'cycle_randfloat', 'cycle_random_float']:
+			elif measure['method'] in ['cyclerandfloat', 'cycle_randfloat', 'cycle_rand_float', 'cycle_random_float']:
 				measure['value'] += float('{0:.2f}'.format(random.uniform(0, measure['by'])))
 				if measure['value'] > measure['to']:
 					measure['value'] = measure['from']
-			elif measure['method'] in ['dayint', 'day_int']:
-				measure['value']
+			elif measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int',
+										'timeseqfloat', 'timeseq_float', 'time_seq_float']:
+				index = 0
+				datapoints = measure['datapoints']
+				if self.now <= datapoints[0]['datetime']:
+					_tmp_value = datapoints[0]['value']
+					value = float('{0:.2f}'.format(_tmp_value + random.uniform(-_tmp_value/40, _tmp_value/40)))
+				elif self.now >= datapoints[-1]['datetime']:
+					_tmp_value = datapoints[-1]['value']
+					value = float('{0:.2f}'.format(_tmp_value + random.uniform(-_tmp_value/40, _tmp_value/40)))
+				else:
+					while datapoints[index]['datetime'] < self.now:
+						index += 1
+					value_delta = float(datapoints[index]['value'] - datapoints[index-1]['value'])
+					time_delta = datapoints[index]['datetime'] - datapoints[index-1]['datetime']
+					seconds_delta_period = time_delta.days*86400 + time_delta.seconds + time_delta.microseconds/1000000
+					time_delta = self.now - datapoints[index-1]['datetime']
+					seconds_delta_now = time_delta.days*86400 + time_delta.seconds + time_delta.microseconds/1000000				
+					delta = (value_delta / seconds_delta_period) * seconds_delta_now
+					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
+					# Add some random noise (+-5%)
+					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))					
+				if measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int']:
+					measure['value'] = int(round(value))
+				else:
+					measure['value'] = value
+			elif measure['method'] in ['dayseqfloat', 'dayseq_float', 'day_seq_float',
+									'dayseqint', 'dayseq_int', 'day_seq_int']:
+				index = 0
+				datapoints = measure['datapoints']
+				if self.now.time() <= datapoints[0]['time']:
+					_tmp_value = datapoints[0]['value']
+					value = float('{0:.2f}'.format(_tmp_value + random.uniform(-_tmp_value/40, _tmp_value/40)))
+				elif self.now.time() >= datapoints[-1]['time']:
+					_tmp_value = datapoints[-1]['value']
+					value = float('{0:.2f}'.format(_tmp_value + random.uniform(-_tmp_value/40, _tmp_value/40)))
+				else:
+					while datapoints[index]['time'] < self.now.time():
+						index += 1
+					value_delta = float(datapoints[index]['value'] - datapoints[index-1]['value'])
+					seconds_delta_period = time_in_seconds(datapoints[index]['time']) - time_in_seconds(datapoints[index-1]['time'])
+					seconds_delta_now = time_in_seconds(self.now.time()) - time_in_seconds(datapoints[index-1]['time'])
+					delta = (value_delta / seconds_delta_period) * seconds_delta_now
+					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
+					# Add some random noise (+-5%)
+					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))					
+				if measure['method'] in ['dayseqint', 'dayseq_int', 'day_seq_int']:
+					measure['value'] = int(round(value))
+				else:
+					measure['value'] = value
+
 			# Special method for specific types of sensors
 
 			# Streetline parking sensor
@@ -84,6 +134,7 @@ class Sensor:
 	
 	def _run(self):
 		self.runtime += self.timeout
+		self.now = datetime.now()
 		self._new_measures()
 		self._send_measures()
 
@@ -99,9 +150,18 @@ class Sensor:
 		self.timeout = eval(get_sensor_option(config, self.id, 'timeout'))
 		self.measures = eval(get_sensor_option(config, self.id, 'measures'))
 		for measure in self.measures:
-			if measure['method'] in ['dayint', 'day_int']:
+			if measure['method'] in ['timeseqfloat', 'timeseq_float', 'time_seq_float',
+									'timeseqint', 'timeseq_int', 'time_seq_int',
+									'timeseqvalue', 'timeseq_value', 'time_seq_value']:
+				measure['datapoints'] = eval(config.get('data', measure['datapoints']))
 				for datapoint in measure['datapoints']:
-					print datapoint
+					datapoint['datetime'] = datetime.strptime(datapoint['datetime'], '%Y-%m-%dT%H:%M:%S')
+			if measure['method'] in ['dayseqfloat', 'dayseq_float', 'day_seq_float',
+									'dayseqint', 'dayseq_int', 'day_seq_int',
+									'dayseqvalue', 'dayseq_value', 'day_seq_value']:
+				measure['datapoints'] = eval(config.get('data', measure['datapoints']))
+				for datapoint in measure['datapoints']:
+					datapoint['time'] = datetime.strptime(datapoint['time'], '%H:%M:%S').time()
 		self.runtime = 0
 		self._ready = True
 		
@@ -115,6 +175,9 @@ class Sensor:
 	def turnoff(self):
 		self._timer.cancel()
 		self.is_on = False
+	
+def time_in_seconds(time):
+	return time.second + (time.minute*60) + (time.hour*3600) + (time.microsecond / 10**6)
 
 def get_sensor_option(config, sensor_id, attribute):
 	if config.has_option(sensor_id, attribute):
@@ -145,10 +208,13 @@ with open(CONFIG_FILE,'r+') as f:
 random.seed()
 sensor_list = []
 
+# We create a sensor for every option which is not in 'idas', 'sensor_defaults' or 'data' sections
 for sensor_id in config.sections():
 	if sensor_id not in ['idas', 'sensor_defaults', 'data']:
 		sensor_list.append(Sensor(sensor_id))
-	
+# We configure the sensors (and abort if there are syntax errors in config file)
 for sensor in sensor_list:
 	sensor.configure(config)
+# Every sensor is well configured, so we turn on all of them
+for sensor in sensor_list:
 	sensor.turnon()
