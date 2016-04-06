@@ -56,6 +56,7 @@ class Sensor:
 				measure['value'] += float('{0:.2f}'.format(random.uniform(0, measure['by'])))
 				if measure['value'] > measure['to']:
 					measure['value'] = measure['from']
+            # Time sequence : a sequence of datetime instants with value
 			elif measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int',
 										'timeseqfloat', 'timeseq_float', 'time_seq_float']:
 				index = 0
@@ -77,11 +78,13 @@ class Sensor:
 					delta = (value_delta / seconds_delta_period) * seconds_delta_now
 					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
 					# Add some random noise (+-5%)
-					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))					
+					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))
+                # We round to int only for int type sensor measure					
 				if measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int']:
 					measure['value'] = int(round(value))
 				else:
 					measure['value'] = value
+            # Day sequence : a sequence of time instants with value that repeats each day
 			elif measure['method'] in ['dayseqfloat', 'dayseq_float', 'day_seq_float',
 									'dayseqint', 'dayseq_int', 'day_seq_int']:
 				index = 0
@@ -101,7 +104,8 @@ class Sensor:
 					delta = (value_delta / seconds_delta_period) * seconds_delta_now
 					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
 					# Add some random noise (+-5%)
-					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))					
+					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))
+                # We round to int only for int type sensor measure					
 				if measure['method'] in ['dayseqint', 'dayseq_int', 'day_seq_int']:
 					measure['value'] = int(round(value))
 				else:
