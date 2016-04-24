@@ -195,30 +195,31 @@ def get_sensor_option(config, sensor_id, attribute):
 	return option
 
 
-NUM_ARG=len(sys.argv)
-COMMAND=sys.argv[0] 
+if __name__ == '__main__':
+	NUM_ARG=len(sys.argv)
+	COMMAND=sys.argv[0] 
 
-if NUM_ARG == 2:
-	CONFIG_FILE = sys.argv[1]
-else:
-	CONFIG_FILE = 'config.ini'
+	if NUM_ARG == 2:
+		CONFIG_FILE = sys.argv[1]
+	else:
+		CONFIG_FILE = 'config.ini'
 
-# Load the configuration file
-with open(CONFIG_FILE,'r+') as f:
-	config = ConfigParser.RawConfigParser(allow_no_value=True)
-	config.readfp(f)
-	f.close()
+	# Load the configuration file
+	with open(CONFIG_FILE,'r+') as f:
+		config = ConfigParser.RawConfigParser(allow_no_value=True)
+		config.readfp(f)
+		f.close()
 
-random.seed()
-sensor_list = []
+	random.seed()
+	sensor_list = []
 
-# We create a sensor for every option which is not in 'idas', 'sensor_defaults' or 'data' sections
-for sensor_id in config.sections():
-	if sensor_id not in ['idas', 'sensor_defaults', 'data']:
-		sensor_list.append(Sensor(sensor_id))
-# We configure the sensors (and abort if there are syntax errors in config file)
-for sensor in sensor_list:
-	sensor.configure(config)
-# Every sensor is well configured, so we turn on all of them
-for sensor in sensor_list:
-	sensor.turnon()
+	# We create a sensor for every option which is not in 'idas', 'sensor_defaults' or 'data' sections
+	for sensor_id in config.sections():
+		if sensor_id not in ['idas', 'sensor_defaults', 'data']:
+			sensor_list.append(Sensor(sensor_id))
+	# We configure the sensors (and abort if there are syntax errors in config file)
+	for sensor in sensor_list:
+		sensor.configure(config)
+	# Every sensor is well configured, so we turn on all of them
+	for sensor in sensor_list:
+		sensor.turnon()
