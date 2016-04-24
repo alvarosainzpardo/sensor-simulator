@@ -79,11 +79,7 @@ class Sensor:
 					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
 					# Add some random noise (+-5%)
 					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))
-<<<<<<< HEAD
-                # We round to int only for int type sensor measure
-=======
         # We round to int only for int type sensor measure
->>>>>>> 62c7924afa4b5f3a369014a5835084438f6ab188
 				if measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int']:
 					measure['value'] = int(round(value))
 				else:
