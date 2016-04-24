@@ -26,7 +26,7 @@ class Sensor:
 
 	def _new_measures(self):
 		_streetline_availability = 0
-		
+
 		for measure in self.measures:
 			if measure['method'] in ['datetime', 'time']:
 				measure['value'] = self.now.isoformat()
@@ -56,7 +56,7 @@ class Sensor:
 				measure['value'] += float('{0:.2f}'.format(random.uniform(0, measure['by'])))
 				if measure['value'] > measure['to']:
 					measure['value'] = measure['from']
-            # Time sequence : a sequence of datetime instants with value
+      # Time sequence : a sequence of datetime instants with value
 			elif measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int',
 										'timeseqfloat', 'timeseq_float', 'time_seq_float']:
 				index = 0
@@ -74,17 +74,17 @@ class Sensor:
 					time_delta = datapoints[index]['datetime'] - datapoints[index-1]['datetime']
 					seconds_delta_period = time_delta.days*86400 + time_delta.seconds + time_delta.microseconds/1000000
 					time_delta = self.now - datapoints[index-1]['datetime']
-					seconds_delta_now = time_delta.days*86400 + time_delta.seconds + time_delta.microseconds/1000000				
+					seconds_delta_now = time_delta.days*86400 + time_delta.seconds + time_delta.microseconds/1000000
 					delta = (value_delta / seconds_delta_period) * seconds_delta_now
 					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
 					# Add some random noise (+-5%)
 					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))
-                # We round to int only for int type sensor measure					
+                # We round to int only for int type sensor measure
 				if measure['method'] in ['timeseqint', 'timeseq_int', 'time_seq_int']:
 					measure['value'] = int(round(value))
 				else:
 					measure['value'] = value
-            # Day sequence : a sequence of time instants with value that repeats each day
+      # Day sequence : a sequence of time instants with value that repeats each day
 			elif measure['method'] in ['dayseqfloat', 'dayseq_float', 'day_seq_float',
 									'dayseqint', 'dayseq_int', 'day_seq_int']:
 				index = 0
@@ -105,7 +105,7 @@ class Sensor:
 					value = float('{0:.2f}'.format(datapoints[index-1]['value'] + delta))
 					# Add some random noise (+-5%)
 					value = float('{0:.2f}'.format(value + random.uniform(-value/40, value/40)))
-                # We round to int only for int type sensor measure					
+        # We round to int only for int type sensor measure
 				if measure['method'] in ['dayseqint', 'dayseq_int', 'day_seq_int']:
 					measure['value'] = int(round(value))
 				else:
@@ -135,7 +135,7 @@ class Sensor:
 			payload += measure['name'] + '|' + str(measure['value'])
 		r = requests.post(url, data=payload, headers='')
 #		print str(r.status_code) + r.text
-	
+
 	def _run(self):
 		self.runtime += self.timeout
 		self.now = datetime.now()
@@ -168,7 +168,7 @@ class Sensor:
 					datapoint['time'] = datetime.strptime(datapoint['time'], '%H:%M:%S').time()
 		self.runtime = 0
 		self._ready = True
-		
+
 	def turnon(self):
 		if self._ready and not self.is_on:
 			self.is_on = True
@@ -179,7 +179,7 @@ class Sensor:
 	def turnoff(self):
 		self._timer.cancel()
 		self.is_on = False
-	
+
 def time_in_seconds(time):
 	return time.second + (time.minute*60) + (time.hour*3600) + (time.microsecond / 10**6)
 
@@ -194,10 +194,10 @@ def get_sensor_option(config, sensor_id, attribute):
 		option = None
 	return option
 
-
+# main program
 if __name__ == '__main__':
 	NUM_ARG=len(sys.argv)
-	COMMAND=sys.argv[0] 
+	COMMAND=sys.argv[0]
 
 	if NUM_ARG == 2:
 		CONFIG_FILE = sys.argv[1]
