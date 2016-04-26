@@ -3,13 +3,13 @@
 # Copyright 2016 Telefonica Soluciones, S.A.U
 # Developed by Alvaro Sainz-Pardo (@asainzp), Mar 2016.
 
+import ConfigParser
+from datetime import datetime
 from __future__ import division
+import random
 import requests
 import sys
-import ConfigParser
 from threading import Timer
-from datetime import datetime
-import random
 
 class Sensor:
 	def __init__(self, id):
@@ -113,6 +113,9 @@ class Sensor:
 
 			# Special method for specific types of sensors
 
+			# Moving sensor with GPS coordinates
+			elif measure[method'] in ['gps_line', 'gps_pol', 'gps_polygon']:
+
 			# Streetline parking sensor
 			elif measure['method'] in ['streetline_state', 'parking_state']:
 				measure['value'] = random.choice(measure['values'])
@@ -166,6 +169,8 @@ class Sensor:
 				measure['datapoints'] = eval(config.get('data', measure['datapoints']))
 				for datapoint in measure['datapoints']:
 					datapoint['time'] = datetime.strptime(datapoint['time'], '%H:%M:%S').time()
+			if measure['method'] in ['gps_line', 'gps_pol', 'gps_polygon']:
+
 		self.runtime = 0
 		self._ready = True
 
