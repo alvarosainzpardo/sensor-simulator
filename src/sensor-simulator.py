@@ -204,7 +204,6 @@ class Sensor:
 					inclat = dlat * ratio_run
 					inclon = dlon * ratio_run
 					measure['value'] = '{0:.6f},{1:.6f}'.format(lat1+inclat, lon1+inclon)
-#				print 'coche: ', self.id, ' index: ', measure['index'],' coords: ', measure['value']
 
 			# Streetline parking sensor
 			elif measure['method'] in ['streetline_state', 'parking_state']:
