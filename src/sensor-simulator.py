@@ -222,6 +222,7 @@ class Sensor:
 	def _send_measures(self):
 		url = 'http://'+self.host+':'+self.port+'/iot/d?k='+self.apikey+'&i='+self.id
 		payload = ''
+		headers = ''
 		first_measure = True
 		for measure in self.measures:
 			if not first_measure:
@@ -229,10 +230,14 @@ class Sensor:
 			else:
 				first_measure = False
 			payload += measure['name'] + '|' + str(measure['value'])
-		r = requests.post(url, data=payload, headers='')
-#		print url
-#		print payload
-#		print str(r.status_code) + r.text
+		r = requests.post(url, data=payload, headers=headers)
+		# Print logs if the request gets an error
+		if r.status_code != 200:
+			print
+			print '['+str(self.now)+'] ERROR '+str(r.status_code)+': '+r.text
+			print 'URL: '+url
+			print 'HEADERS: '+headers
+			print 'PAYLOAD: '+payload
 
 	def _run(self):
 		self.runtime += self.timeout
