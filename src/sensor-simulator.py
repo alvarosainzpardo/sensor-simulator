@@ -234,7 +234,7 @@ class Sensor:
 		# Print logs if the request gets an error
 		if r.status_code != 200:
 			print
-			print '['+str(self.now)+'] ERROR '+str(r.status_code)+': '+r.text
+			print '['+self.now.strftime('%Y-%m-%d %H:%M:%S')+'] ERROR '+str(r.status_code)+': '+r.text
 			print 'URL: '+url
 			print 'HEADERS: '+headers
 			print 'PAYLOAD: '+payload
