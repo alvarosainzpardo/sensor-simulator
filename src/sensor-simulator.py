@@ -222,7 +222,7 @@ class Sensor:
 	def _send_measures(self):
 		url = 'http://'+self.host+':'+self.port+'/iot/d?k='+self.apikey+'&i='+self.id
 		payload = ''
-		headers = ''
+		headers = {'content-type':'text/plain'}
 		first_measure = True
 		for measure in self.measures:
 			if not first_measure:
